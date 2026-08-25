@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +31,6 @@
     min-height:100vh;
   }
   ::selection{background:var(--amber);color:#000;}
-  /* ticker */
   .ticker-wrap{
     border-bottom:1px solid var(--border);
     background:var(--surface);
@@ -69,7 +68,6 @@
   h1 .dim{color:var(--text-dim);font-weight:400;}
   .subtitle{font-size:12px;color:var(--text-dim);font-family:var(--mono);}
 
-  /* metric cards */
   .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:28px;}
   .metric{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
   .metric .label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:var(--sans);}
@@ -86,7 +84,6 @@
     color:var(--amber-dim);margin:0 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px;
   }
 
-  /* pairs sidebar */
   .pair-row{
     display:flex;justify-content:space-between;padding:8px 0;font-family:var(--mono);font-size:12px;
     border-bottom:1px solid var(--border);
@@ -97,7 +94,6 @@
   .pair-row .pnl.neg{color:var(--red);}
   .empty-note{color:var(--text-dim);font-size:12px;font-family:var(--mono);padding:8px 0;}
 
-  /* form */
   form{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   @media (max-width:640px){form{grid-template-columns:repeat(2,1fr);}}
   .field{display:flex;flex-direction:column;gap:4px;}
@@ -117,7 +113,6 @@
   .btn:hover{background:rgba(255,176,0,0.1);}
   .err{grid-column:1/-1;color:var(--red);font-size:12px;font-family:var(--mono);display:none;}
 
-  /* trade table */
   table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;}
   th{
     text-align:left;color:var(--text-dim);font-weight:500;text-transform:uppercase;
@@ -142,7 +137,7 @@
 </head>
 <body>
 
-<div class="ticker-wrap"><div class="ticker" id="tickerTape">লোড হচ্ছে<span class="cursor"></span></div></div>
+<div class="ticker-wrap"><div class="ticker" id="tickerTape">Loading<span class="cursor"></span></div></div>
 
 <div class="wrap">
   <header class="h">
@@ -151,69 +146,69 @@
   </header>
 
   <div class="metrics" id="metrics">
-    <div class="loading">লোড হচ্ছে...</div>
+    <div class="loading">Loading...</div>
   </div>
 
   <div class="grid2">
     <div>
       <div class="panel">
-        <h2>পেয়ার সামারি</h2>
+        <h2>Pair Summary</h2>
         <div id="pairSummary"></div>
       </div>
     </div>
 
     <div>
       <div class="panel">
-        <h2>নতুন ট্রেড যোগ করুন</h2>
+        <h2>Add New Trade</h2>
         <form id="tradeForm">
           <div class="field">
-            <label>পেয়ার</label>
+            <label>Pair</label>
             <input type="text" id="f_pair" placeholder="EUR/USD" required>
           </div>
           <div class="field">
-            <label>ডিরেকশন</label>
+            <label>Direction</label>
             <select id="f_dir">
               <option value="buy">Buy</option>
               <option value="sell">Sell</option>
             </select>
           </div>
           <div class="field">
-            <label>এন্ট্রি প্রাইস</label>
+            <label>Entry Price</label>
             <input type="number" step="any" id="f_entry" placeholder="1.0850" required>
           </div>
           <div class="field">
-            <label>কোয়ান্টিটি / লট</label>
+            <label>Quantity / Lot</label>
             <input type="number" step="any" id="f_qty" placeholder="1" required>
           </div>
           <div class="field">
-            <label>এক্সিট প্রাইস (ঐচ্ছিক)</label>
-            <input type="number" step="any" id="f_exit" placeholder="ওপেন হলে খালি রাখুন">
+            <label>Exit Price (optional)</label>
+            <input type="number" step="any" id="f_exit" placeholder="Leave blank if open">
           </div>
           <div class="field">
-            <label>ওপেন তারিখ</label>
+            <label>Open Date</label>
             <input type="date" id="f_odate">
           </div>
           <div class="field full">
-            <label>নোট (ঐচ্ছিক)</label>
-            <input type="text" id="f_note" placeholder="যেমন: NFP ব্রেকআউট">
+            <label>Note (optional)</label>
+            <input type="text" id="f_note" placeholder="e.g. NFP breakout">
           </div>
           <div class="err" id="formErr"></div>
-          <button type="submit" class="btn">ট্রেড সেভ করুন</button>
+          <button type="submit" class="btn">Save Trade</button>
         </form>
       </div>
 
       <div class="panel">
-        <h2>ট্রেড লগ</h2>
+        <h2>Trade Log</h2>
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>পেয়ার</th><th>দিক</th><th>এন্ট্রি</th><th>এক্সিট</th><th>কোয়ান্টিটি</th>
-                <th>স্ট্যাটাস</th><th>P&amp;L</th><th>তারিখ</th><th></th>
+                <th>Pair</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Qty</th>
+                <th>Status</th><th>P&amp;L</th><th>Date</th><th></th>
               </tr>
             </thead>
             <tbody id="tradeBody">
-              <tr><td colspan="9" class="loading">লোড হচ্ছে...</td></tr>
+              <tr><td colspan="9" class="loading">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -276,19 +271,19 @@ function renderMetrics(){
   const el = document.getElementById('metrics');
   el.innerHTML = `
     <div class="metric">
-      <div class="label">মোট P&amp;L</div>
+      <div class="label">Total P&amp;L</div>
       <div class="value ${totalPnl>0?'pos':totalPnl<0?'neg':''}">${totalPnl>=0?'+':''}${fmt(totalPnl)}</div>
     </div>
     <div class="metric">
-      <div class="label">ওপেন পজিশন</div>
+      <div class="label">Open Positions</div>
       <div class="value">${open.length}</div>
     </div>
     <div class="metric">
-      <div class="label">উইন রেট</div>
+      <div class="label">Win Rate</div>
       <div class="value">${winRate}%</div>
     </div>
     <div class="metric">
-      <div class="label">মোট ট্রেড</div>
+      <div class="label">Total Trades</div>
       <div class="value">${trades.length}</div>
     </div>
   `;
@@ -298,7 +293,7 @@ function renderTicker(){
   const open = trades.filter(t => t.exit === null || t.exit === undefined || t.exit === '');
   const tape = document.getElementById('tickerTape');
   if(!open.length){
-    tape.innerHTML = 'কোনো ওপেন পজিশন নেই<span class="cursor"></span>';
+    tape.innerHTML = 'No open positions<span class="cursor"></span>';
     return;
   }
   let html = '';
@@ -307,13 +302,13 @@ function renderTicker(){
     const cls = t.dir === 'buy' ? 'up' : 'down';
     html += `<span class="${cls}">${dirLabel} ${t.pair} @ ${fmt(t.entry)}</span>`;
   });
-  tape.innerHTML = html + html + '<span class="cursor"></span>'; // duplicate for seamless loop
+  tape.innerHTML = html + html + '<span class="cursor"></span>';
 }
 
 function renderPairs(){
   const el = document.getElementById('pairSummary');
   if(!trades.length){
-    el.innerHTML = '<div class="empty-note">এখনো কোনো ট্রেড নেই।</div>';
+    el.innerHTML = '<div class="empty-note">No trades yet.</div>';
     return;
   }
   const byPair = {};
@@ -335,7 +330,7 @@ function renderPairs(){
 function renderTable(){
   const body = document.getElementById('tradeBody');
   if(!trades.length){
-    body.innerHTML = '<tr><td colspan="9" class="empty-note">এখনো কোনো ট্রেড যোগ করা হয়নি। উপরের ফর্ম দিয়ে শুরু করুন।</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" class="empty-note">No trades logged yet. Use the form above to get started.</td></tr>';
     return;
   }
   const sorted = [...trades].sort((a,b) => (b.odate||'').localeCompare(a.odate||''));
@@ -349,26 +344,26 @@ function renderTable(){
       <td>${fmt(t.entry)}</td>
       <td>${isOpen ? '—' : fmt(t.exit)}</td>
       <td>${t.qty}</td>
-      <td class="status-${isOpen?'open':'closed'}">${isOpen ? 'ওপেন' : 'ক্লোজড'}</td>
+      <td class="status-${isOpen?'open':'closed'}">${isOpen ? 'Open' : 'Closed'}</td>
       <td class="${pnlCls}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)}</td>
       <td>${t.odate || '—'}</td>
       <td class="tbl-actions">
-        ${isOpen ? `<button onclick="closePosition('${t.id}')">ক্লোজ</button>` : ''}
-        <button onclick="deleteTrade('${t.id}')">ডিলিট</button>
+        ${isOpen ? `<button onclick="closePosition('${t.id}')">Close</button>` : ''}
+        <button onclick="deleteTrade('${t.id}')">Delete</button>
       </td>
     </tr>`;
   }).join('');
 }
 
 async function closePosition(id){
-  const price = prompt('এক্সিট প্রাইস লিখুন:');
+  const price = prompt('Enter exit price:');
   if(price === null || price === '' || isNaN(price)) return;
   const t = trades.find(x => x.id === id);
   if(t){ t.exit = parseFloat(price); await saveTrades(); render(); }
 }
 
 async function deleteTrade(id){
-  if(!confirm('এই ট্রেডটি ডিলিট করতে চান?')) return;
+  if(!confirm('Delete this trade?')) return;
   trades = trades.filter(t => t.id !== id);
   await saveTrades();
   render();
@@ -389,7 +384,7 @@ document.getElementById('tradeForm').addEventListener('submit', async (e) => {
   const note = document.getElementById('f_note').value.trim();
 
   if(!pair || isNaN(entry) || isNaN(qty) || qty <= 0){
-    errEl.textContent = 'পেয়ার, এন্ট্রি প্রাইস এবং কোয়ান্টিটি সঠিকভাবে পূরণ করুন।';
+    errEl.textContent = 'Please fill in pair, entry price, and quantity correctly.';
     errEl.style.display = 'block';
     return;
   }
