@@ -3,399 +3,1752 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Ledger</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<title>YeaminTrades — Trading Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-  :root{
-    --bg:#0B0D0A;
-    --surface:#14170F;
-    --surface-2:#1B1F14;
-    --border:rgba(255,176,0,0.16);
-    --border-strong:rgba(255,176,0,0.32);
-    --amber:#FFB000;
-    --amber-dim:#C9A227;
-    --text:#EDE6D6;
-    --text-dim:#9A9686;
-    --green:#5CE65C;
-    --red:#FF5D5D;
-    --mono:'JetBrains Mono', monospace;
-    --sans:'Inter', sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
+:root{
+    --bg:#080b10;
+    --panel:#0f141c;
+    --panel2:#121923;
+    --border:#202a36;
+    --text:#f3f6fa;
+    --muted:#8b98a8;
+    --green:#39d98a;
+    --red:#ff657a;
+    --blue:#5d8cff;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
     margin:0;
-    background:var(--bg);
+    background:
+        radial-gradient(circle at 85% 0%,#152238 0,#080b10 38%);
     color:var(--text);
-    font-family:var(--sans);
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,
+    "Segoe UI",sans-serif;
+}
+
+/* SIDEBAR */
+
+.app{
+    display:flex;
     min-height:100vh;
-  }
-  ::selection{background:var(--amber);color:#000;}
-  .ticker-wrap{
-    border-bottom:1px solid var(--border);
-    background:var(--surface);
-    overflow:hidden;
-    white-space:nowrap;
-    padding:10px 0;
-  }
-  .ticker{
-    display:inline-block;
-    font-family:var(--mono);
-    font-size:13px;
-    animation:scroll 30s linear infinite;
-    padding-left:100%;
-  }
-  .ticker span{margin-right:40px;}
-  .ticker .up{color:var(--green);}
-  .ticker .down{color:var(--red);}
-  .ticker .flat{color:var(--amber-dim);}
-  @keyframes scroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-100%);}
-  }
-  .cursor{
-    display:inline-block;width:8px;height:14px;background:var(--amber);
-    animation:blink 1s step-end infinite;vertical-align:-2px;margin-left:4px;
-  }
-  @keyframes blink{50%{opacity:0;}}
+}
 
-  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px;}
-  header.h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:8px;}
-  h1{
-    font-family:var(--mono);font-weight:700;font-size:20px;letter-spacing:0.5px;
-    color:var(--amber);margin:0;
-  }
-  h1 .dim{color:var(--text-dim);font-weight:400;}
-  .subtitle{font-size:12px;color:var(--text-dim);font-family:var(--mono);}
+.side{
+    width:250px;
+    border-right:1px solid var(--border);
+    background:#090d13;
+    padding:24px 16px;
+    position:fixed;
+    inset:0 auto 0 0;
+}
 
-  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:28px;}
-  .metric{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
-  .metric .label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-family:var(--sans);}
-  .metric .value{font-family:var(--mono);font-size:22px;font-weight:500;}
-  .metric .value.pos{color:var(--green);}
-  .metric .value.neg{color:var(--red);}
+.logo{
+    font-size:19px;
+    font-weight:800;
+    padding:8px 10px 30px;
+}
 
-  .grid2{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start;}
-  @media (max-width:720px){.grid2{grid-template-columns:1fr;}}
+.logo span{
+    color:var(--green);
+}
 
-  .panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:20px;}
-  .panel h2{
-    font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:0.8px;
-    color:var(--amber-dim);margin:0 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px;
-  }
+.nav{
+    display:grid;
+    gap:7px;
+}
 
-  .pair-row{
-    display:flex;justify-content:space-between;padding:8px 0;font-family:var(--mono);font-size:12px;
-    border-bottom:1px solid var(--border);
-  }
-  .pair-row:last-child{border-bottom:none;}
-  .pair-row .name{color:var(--text);}
-  .pair-row .pnl.pos{color:var(--green);}
-  .pair-row .pnl.neg{color:var(--red);}
-  .empty-note{color:var(--text-dim);font-size:12px;font-family:var(--mono);padding:8px 0;}
+.nav button{
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    text-align:left;
+    padding:13px 14px;
+    border-radius:10px;
+    cursor:pointer;
+}
 
-  form{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
-  @media (max-width:640px){form{grid-template-columns:repeat(2,1fr);}}
-  .field{display:flex;flex-direction:column;gap:4px;}
-  .field label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);}
-  .field.full{grid-column:1/-1;}
-  input,select{
-    background:var(--surface-2);border:1px solid var(--border);color:var(--text);
-    border-radius:4px;padding:8px 10px;font-family:var(--mono);font-size:13px;outline:none;
-  }
-  input:focus,select:focus{border-color:var(--border-strong);}
-  input::placeholder{color:var(--text-dim);}
-  .btn{
-    grid-column:1/-1;background:transparent;border:1px solid var(--amber);color:var(--amber);
-    padding:10px;border-radius:4px;font-family:var(--mono);font-size:13px;letter-spacing:0.5px;
-    cursor:pointer;text-transform:uppercase;transition:background 0.15s;
-  }
-  .btn:hover{background:rgba(255,176,0,0.1);}
-  .err{grid-column:1/-1;color:var(--red);font-size:12px;font-family:var(--mono);display:none;}
+.nav button:hover,
+.nav button.active{
+    background:#151c27;
+    color:#fff;
+}
 
-  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;}
-  th{
-    text-align:left;color:var(--text-dim);font-weight:500;text-transform:uppercase;
-    font-size:10px;letter-spacing:0.5px;padding:6px 8px;border-bottom:1px solid var(--border-strong);
-  }
-  td{padding:8px;border-bottom:1px solid var(--border);white-space:nowrap;}
-  tr:last-child td{border-bottom:none;}
-  .dir-buy{color:var(--green);}
-  .dir-sell{color:var(--red);}
-  .status-open{color:var(--amber);}
-  .status-closed{color:var(--text-dim);}
-  .pnl-pos{color:var(--green);}
-  .pnl-neg{color:var(--red);}
-  .tbl-actions button{
-    background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:3px;
-    padding:3px 8px;font-family:var(--sans);font-size:11px;cursor:pointer;margin-right:4px;
-  }
-  .tbl-actions button:hover{border-color:var(--border-strong);color:var(--text);}
-  .table-scroll{overflow-x:auto;}
-  .loading{color:var(--text-dim);font-family:var(--mono);font-size:12px;padding:20px 0;text-align:center;}
+.user{
+    position:absolute;
+    bottom:20px;
+    left:18px;
+    right:18px;
+    border-top:1px solid var(--border);
+    padding-top:16px;
+}
+
+.userrow{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+.avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#5d8cff,#39d98a);
+    display:grid;
+    place-items:center;
+    font-weight:800;
+}
+
+.user small{
+    color:var(--muted);
+}
+
+/* MAIN */
+
+main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    padding:30px;
+    max-width:1600px;
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.top h1{
+    margin:0;
+    font-size:28px;
+}
+
+.top p{
+    margin:7px 0 0;
+    color:var(--muted);
+}
+
+.add{
+    background:var(--green);
+    border:0;
+    color:#07120d;
+    font-weight:800;
+    padding:11px 17px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+/* STAT CARDS */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+}
+
+.card{
+    background:linear-gradient(180deg,#111821,#0e131b);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px;
+}
+
+.label{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.value{
+    font-size:25px;
+    font-weight:750;
+    margin-top:8px;
+}
+
+.positive{
+    color:var(--green);
+}
+
+.negative{
+    color:var(--red);
+}
+
+/* GRID */
+
+.grid{
+    display:grid;
+    grid-template-columns:1.5fr 1fr;
+    gap:16px;
+    margin-top:16px;
+}
+
+.panel{
+    background:rgba(15,20,28,.92);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px;
+}
+
+.panel h2{
+    font-size:15px;
+    margin:0 0 16px;
+}
+
+.chartbox{
+    height:280px;
+}
+
+/* TABLE */
+
+.tablewrap{
+    overflow:auto;
+}
+
+.tr,
+.th{
+    display:grid;
+    grid-template-columns:
+        1.2fr .7fr .7fr .9fr .9fr .8fr;
+    gap:10px;
+    align-items:center;
+    min-width:720px;
+}
+
+.th{
+    color:var(--muted);
+    font-size:11px;
+    text-transform:uppercase;
+    padding:8px 10px;
+}
+
+.tr{
+    padding:13px 10px;
+    border-top:1px solid var(--border);
+}
+
+.badge{
+    padding:5px 8px;
+    border-radius:7px;
+    font-size:11px;
+    font-weight:700;
+    width:max-content;
+}
+
+.buy{
+    background:#123c2a;
+    color:var(--green);
+}
+
+.sell{
+    background:#3b1820;
+    color:var(--red);
+}
+
+.open{
+    background:#182b50;
+    color:#79a0ff;
+}
+
+.closed{
+    background:#202733;
+    color:#aeb8c6;
+}
+
+.empty{
+    padding:30px;
+    text-align:center;
+    color:var(--muted);
+}
+
+/* SECTIONS */
+
+.section{
+    display:none;
+}
+
+.section.active{
+    display:block;
+}
+
+/* MODAL */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:#0009;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.form{
+    width:min(620px,100%);
+    background:#101720;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:22px;
+}
+
+.form h2{
+    margin-top:0;
+}
+
+.fields{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.field label{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    margin-bottom:6px;
+}
+
+.field input,
+.field select,
+.field textarea{
+    width:100%;
+    background:#0a0f15;
+    border:1px solid #263241;
+    color:#fff;
+    border-radius:9px;
+    padding:10px;
+}
+
+.field.full{
+    grid-column:1/-1;
+}
+
+.actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:18px;
+}
+
+.cancel{
+    background:#1a222d;
+    color:#fff;
+    border:0;
+    padding:10px 15px;
+    border-radius:9px;
+    cursor:pointer;
+}
+
+.save{
+    background:var(--green);
+    border:0;
+    padding:10px 15px;
+    border-radius:9px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.note{
+    color:var(--muted);
+    font-size:12px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+    .side{
+        width:72px;
+    }
+
+    .logo{
+        font-size:0;
+    }
+
+    .logo span{
+        font-size:20px;
+    }
+
+    .nav button{
+        font-size:0;
+        text-align:center;
+    }
+
+    .nav button:before{
+        content:"•";
+        font-size:20px;
+    }
+
+    .user{
+        display:none;
+    }
+
+    main{
+        margin-left:72px;
+        width:calc(100% - 72px);
+        padding:18px;
+    }
+
+    .cards{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:560px){
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    .fields{
+        grid-template-columns:1fr;
+    }
+
+    .field.full{
+        grid-column:auto;
+    }
+
+}
 </style>
 </head>
+
+
 <body>
 
-<div class="ticker-wrap"><div class="ticker" id="tickerTape">Loading<span class="cursor"></span></div></div>
+<div class="app">
 
-<div class="wrap">
-  <header class="h">
-    <h1>TRADE <span class="dim">LEDGER</span></h1>
-    <div class="subtitle" id="dateNow"></div>
-  </header>
+<!-- SIDEBAR -->
 
-  <div class="metrics" id="metrics">
-    <div class="loading">Loading...</div>
-  </div>
+<aside class="side">
 
-  <div class="grid2">
-    <div>
-      <div class="panel">
-        <h2>Pair Summary</h2>
-        <div id="pairSummary"></div>
-      </div>
+    <div class="logo">
+        YEAMIN<span>TRADES</span>
     </div>
 
-    <div>
-      <div class="panel">
-        <h2>Add New Trade</h2>
-        <form id="tradeForm">
-          <div class="field">
-            <label>Pair</label>
-            <input type="text" id="f_pair" placeholder="EUR/USD" required>
-          </div>
-          <div class="field">
-            <label>Direction</label>
-            <select id="f_dir">
-              <option value="buy">Buy</option>
-              <option value="sell">Sell</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Entry Price</label>
-            <input type="number" step="any" id="f_entry" placeholder="1.0850" required>
-          </div>
-          <div class="field">
-            <label>Quantity / Lot</label>
-            <input type="number" step="any" id="f_qty" placeholder="1" required>
-          </div>
-          <div class="field">
-            <label>Exit Price (optional)</label>
-            <input type="number" step="any" id="f_exit" placeholder="Leave blank if open">
-          </div>
-          <div class="field">
-            <label>Open Date</label>
-            <input type="date" id="f_odate">
-          </div>
-          <div class="field full">
-            <label>Note (optional)</label>
-            <input type="text" id="f_note" placeholder="e.g. NFP breakout">
-          </div>
-          <div class="err" id="formErr"></div>
-          <button type="submit" class="btn">Save Trade</button>
-        </form>
-      </div>
+    <nav class="nav">
 
-      <div class="panel">
-        <h2>Trade Log</h2>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Pair</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Qty</th>
-                <th>Status</th><th>P&amp;L</th><th>Date</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="tradeBody">
-              <tr><td colspan="9" class="loading">Loading...</td></tr>
-            </tbody>
-          </table>
+        <button
+            class="active"
+            onclick="showSection('dashboard',this)">
+            Dashboard
+        </button>
+
+        <button
+            onclick="showSection('trades',this)">
+            Trade History
+        </button>
+
+        <button
+            onclick="showSection('positions',this)">
+            Open Positions
+        </button>
+
+        <button
+            onclick="showSection('profile',this)">
+            Profile
+        </button>
+
+    </nav>
+
+
+    <div class="user">
+
+        <div class="userrow">
+
+            <div class="avatar">
+                YA
+            </div>
+
+            <div>
+                <b>Yeamin Ahmed</b>
+                <br>
+                <small>Forex Trader</small>
+            </div>
+
         </div>
-      </div>
+
     </div>
-  </div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main>
+
+
+<!-- DASHBOARD -->
+
+<section
+    id="dashboard"
+    class="section active">
+
+    <div class="top">
+
+        <div>
+
+            <h1>
+                Trading Dashboard
+            </h1>
+
+            <p>
+                Track your positions,
+                performance and trading history.
+            </p>
+
+        </div>
+
+        <button
+            class="add"
+            onclick="openModal()">
+
+            ＋ Add Trade
+
+        </button>
+
+    </div>
+
+
+    <!-- STAT CARDS -->
+
+    <div class="cards">
+
+        <div class="card">
+
+            <div class="label">
+                Account Balance
+            </div>
+
+            <div
+                class="value"
+                id="balance">
+
+                $10,000.00
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Total P/L
+            </div>
+
+            <div
+                class="value"
+                id="pnl">
+
+                $0.00
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Win Rate
+            </div>
+
+            <div
+                class="value"
+                id="winrate">
+
+                0%
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Open Positions
+            </div>
+
+            <div
+                class="value"
+                id="openCount">
+
+                0
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CHARTS -->
+
+    <div class="grid">
+
+
+        <div class="panel">
+
+            <h2>
+                Equity Curve
+            </h2>
+
+            <div class="chartbox">
+
+                <canvas
+                    id="equityChart">
+                </canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <h2>
+                Performance
+            </h2>
+
+            <div class="chartbox">
+
+                <canvas
+                    id="perfChart">
+                </canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- RECENT TRADES -->
+
+    <div
+        class="panel"
+        style="margin-top:16px">
+
+        <h2>
+            Recent Trades
+        </h2>
+
+        <div id="recent"></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- TRADE HISTORY -->
+
+<section
+    id="trades"
+    class="section">
+
+    <div class="top">
+
+        <div>
+
+            <h1>
+                Trade History
+            </h1>
+
+            <p>
+                Every trade you've recorded.
+            </p>
+
+        </div>
+
+        <button
+            class="add"
+            onclick="openModal()">
+
+            ＋ Add Trade
+
+        </button>
+
+    </div>
+
+
+    <div class="panel">
+
+        <div class="tablewrap">
+
+            <div class="th">
+
+                <span>PAIR</span>
+                <span>TYPE</span>
+                <span>STATUS</span>
+                <span>ENTRY</span>
+                <span>P/L</span>
+                <span>DATE</span>
+
+            </div>
+
+            <div id="tradeTable"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- OPEN POSITIONS -->
+
+<section
+    id="positions"
+    class="section">
+
+    <div class="top">
+
+        <div>
+
+            <h1>
+                Open Positions
+            </h1>
+
+            <p>
+                Monitor currently active trades.
+            </p>
+
+        </div>
+
+        <button
+            class="add"
+            onclick="openModal()">
+
+            ＋ Add Trade
+
+        </button>
+
+    </div>
+
+
+    <div class="panel">
+
+        <div id="positionsTable"></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- PROFILE -->
+
+<section
+    id="profile"
+    class="section">
+
+    <div class="top">
+
+        <div>
+
+            <h1>
+                Trader Profile
+            </h1>
+
+            <p>
+                Your public trading identity.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="panel"
+        style="max-width:700px">
+
+
+        <div class="userrow">
+
+            <div
+                class="avatar"
+                style="
+                    width:64px;
+                    height:64px;
+                    font-size:20px">
+
+                YA
+
+            </div>
+
+
+            <div>
+
+                <h2 style="margin:0">
+                    Yeamin Ahmed
+                </h2>
+
+                <div class="note">
+                    Professional Forex Trader
+                    & Financial Market Analyst
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <hr
+            style="
+            border:0;
+            border-top:1px solid var(--border);
+            margin:22px 0;">
+
+
+        <p>
+
+            <span class="label">
+                EMAIL
+            </span>
+
+            <br>
+
+            <b>
+                yeaminahmed01232@gmail.com
+            </b>
+
+        </p>
+
+
+        <p>
+
+            <span class="label">
+                SPECIALIZATION
+            </span>
+
+            <br>
+
+            <b>
+                Forex • Gold • Major Currency Pairs
+            </b>
+
+        </p>
+
+
+        <p>
+
+            <span class="label">
+                ABOUT
+            </span>
+
+            <br>
+
+            <span class="note">
+                Personal trading journal
+                and performance dashboard.
+            </span>
+
+        </p>
+
+    </div>
+
+</section>
+
+</main>
+
 </div>
 
+
+
+<!-- ADD TRADE MODAL -->
+
+<div
+    class="modal"
+    id="modal">
+
+
+    <div class="form">
+
+        <h2>
+            Add New Trade
+        </h2>
+
+
+        <div class="fields">
+
+
+            <div class="field">
+
+                <label>
+                    Pair
+                </label>
+
+                <input
+                    id="pair"
+                    placeholder="e.g. XAUUSD">
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Direction
+                </label>
+
+                <select id="direction">
+
+                    <option>
+                        BUY
+                    </option>
+
+                    <option>
+                        SELL
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Status
+                </label>
+
+                <select id="status">
+
+                    <option>
+                        OPEN
+                    </option>
+
+                    <option>
+                        CLOSED
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Entry Price
+                </label>
+
+                <input
+                    id="entry"
+                    type="number"
+                    step="any"
+                    placeholder="2350.50">
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Stop Loss
+                </label>
+
+                <input
+                    id="sl"
+                    type="number"
+                    step="any"
+                    placeholder="2340.00">
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Take Profit
+                </label>
+
+                <input
+                    id="tp"
+                    type="number"
+                    step="any"
+                    placeholder="2380.00">
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Lot Size
+                </label>
+
+                <input
+                    id="lot"
+                    type="number"
+                    step="any"
+                    placeholder="0.10">
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    P/L ($)
+                </label>
+
+                <input
+                    id="profit"
+                    type="number"
+                    step="any"
+                    placeholder="125">
+
+            </div>
+
+
+            <div class="field full">
+
+                <label>
+                    Trade Note
+                </label>
+
+                <textarea
+                    id="note"
+                    rows="3"
+                    placeholder="Why did you take this trade?">
+                </textarea>
+
+            </div>
+
+        </div>
+
+
+        <div class="actions">
+
+            <button
+                class="cancel"
+                onclick="closeModal()">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                class="save"
+                onclick="saveTrade()">
+
+                Save Trade
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
 <script>
-const STORAGE_KEY = 'trades';
-let trades = [];
 
-document.getElementById('dateNow').textContent = new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+/* =========================================
+   TRADING DATA
+========================================= */
 
-function uid(){ return 't' + Date.now() + Math.random().toString(36).slice(2,7); }
+const storageKey = "yeaminTrades";
 
-function calcPnl(t){
-  if(t.exit === null || t.exit === undefined || t.exit === '') return null;
-  const diff = (t.exit - t.entry) * (t.dir === 'buy' ? 1 : -1);
-  return diff * t.qty;
+let trades =
+    JSON.parse(
+        localStorage.getItem(storageKey) || "[]"
+    );
+
+
+/* =========================================
+   MONEY FORMAT
+========================================= */
+
+function money(number){
+
+    return Number(number || 0)
+        .toLocaleString(
+            "en-US",
+            {
+                style:"currency",
+                currency:"USD"
+            }
+        );
+
 }
 
-async function loadTrades(){
-  try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    trades = res ? JSON.parse(res.value) : [];
-  }catch(e){
-    trades = [];
-  }
-  render();
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+function showSection(id,button){
+
+    document
+        .querySelectorAll(".section")
+        .forEach(section => {
+
+            section.classList.remove("active");
+
+        });
+
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+
+    document
+        .querySelectorAll(".nav button")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+
+    button.classList.add("active");
+
+    render();
+
 }
 
-async function saveTrades(){
-  try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(trades), false);
-  }catch(e){
-    console.error('storage save failed', e);
-  }
+
+/* =========================================
+   MODAL
+========================================= */
+
+function openModal(){
+
+    document
+        .getElementById("modal")
+        .classList.add("show");
+
 }
 
-function fmt(n){
-  if(n === null || n === undefined || isNaN(n)) return '—';
-  return n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:4});
+
+function closeModal(){
+
+    document
+        .getElementById("modal")
+        .classList.remove("show");
+
 }
+
+
+/* =========================================
+   SAVE TRADE
+========================================= */
+
+function saveTrade(){
+
+    const trade = {
+
+        id:Date.now(),
+
+        pair:
+            document
+            .getElementById("pair")
+            .value
+            .trim()
+            .toUpperCase(),
+
+        direction:
+            document
+            .getElementById("direction")
+            .value,
+
+        status:
+            document
+            .getElementById("status")
+            .value,
+
+        entry:
+            document
+            .getElementById("entry")
+            .value,
+
+        sl:
+            document
+            .getElementById("sl")
+            .value,
+
+        tp:
+            document
+            .getElementById("tp")
+            .value,
+
+        lot:
+            document
+            .getElementById("lot")
+            .value,
+
+        profit:
+            Number(
+                document
+                .getElementById("profit")
+                .value || 0
+            ),
+
+        note:
+            document
+            .getElementById("note")
+            .value,
+
+        date:
+            new Date()
+            .toLocaleDateString()
+
+    };
+
+
+    if(
+        !trade.pair ||
+        !trade.entry
+    ){
+
+        alert(
+            "Please enter Pair and Entry Price."
+        );
+
+        return;
+
+    }
+
+
+    trades.unshift(trade);
+
+
+    localStorage.setItem(
+        storageKey,
+        JSON.stringify(trades)
+    );
+
+
+    closeModal();
+
+
+    document
+        .querySelectorAll(".form input, .form textarea")
+        .forEach(input => {
+
+            input.value = "";
+
+        });
+
+
+    render();
+
+}
+
+
+/* =========================================
+   TRADE ROW
+========================================= */
+
+function tradeRow(trade){
+
+    return `
+
+    <div class="tr">
+
+        <b>
+            ${trade.pair}
+        </b>
+
+        <span
+            class="badge ${
+                trade.direction === "BUY"
+                ? "buy"
+                : "sell"
+            }">
+
+            ${trade.direction}
+
+        </span>
+
+
+        <span
+            class="badge ${
+                trade.status === "OPEN"
+                ? "open"
+                : "closed"
+            }">
+
+            ${trade.status}
+
+        </span>
+
+
+        <span>
+            ${trade.entry}
+        </span>
+
+
+        <b
+            class="${
+                trade.profit >= 0
+                ? "positive"
+                : "negative"
+            }">
+
+            ${money(trade.profit)}
+
+        </b>
+
+
+        <span>
+            ${trade.date}
+        </span>
+
+    </div>
+
+    `;
+
+}
+
+
+/* =========================================
+   RENDER
+========================================= */
 
 function render(){
-  renderMetrics();
-  renderTicker();
-  renderPairs();
-  renderTable();
+
+    const closedTrades =
+        trades.filter(
+            trade =>
+                trade.status === "CLOSED"
+        );
+
+
+    const winningTrades =
+        closedTrades.filter(
+            trade =>
+                trade.profit > 0
+        );
+
+
+    const totalProfit =
+        trades.reduce(
+            (total,trade) =>
+                total + trade.profit,
+            0
+        );
+
+
+    const winRate =
+        closedTrades.length
+        ? Math.round(
+            winningTrades.length /
+            closedTrades.length *
+            100
+        )
+        : 0;
+
+
+    const openTrades =
+        trades.filter(
+            trade =>
+                trade.status === "OPEN"
+        );
+
+
+    /* Balance */
+
+    document
+        .getElementById("balance")
+        .textContent =
+        money(10000 + totalProfit);
+
+
+    /* P/L */
+
+    const pnlElement =
+        document
+        .getElementById("pnl");
+
+
+    pnlElement.textContent =
+        money(totalProfit);
+
+
+    pnlElement.className =
+        "value " +
+        (
+            totalProfit >= 0
+            ? "positive"
+            : "negative"
+        );
+
+
+    /* Win Rate */
+
+    document
+        .getElementById("winrate")
+        .textContent =
+        winRate + "%";
+
+
+    /* Open Positions */
+
+    document
+        .getElementById("openCount")
+        .textContent =
+        openTrades.length;
+
+
+    /* Trade History */
+
+    const table =
+        document
+        .getElementById("tradeTable");
+
+
+    if(trades.length){
+
+        table.innerHTML =
+            trades
+            .map(tradeRow)
+            .join("");
+
+    }else{
+
+        table.innerHTML = `
+            <div class="empty">
+                No trades yet.
+                Click "Add Trade" to start.
+            </div>
+        `;
+
+    }
+
+
+    /* Open Positions */
+
+    const positions =
+        document
+        .getElementById("positionsTable");
+
+
+    if(openTrades.length){
+
+        positions.innerHTML = `
+
+            <div class="tablewrap">
+
+                <div class="th">
+
+                    <span>PAIR</span>
+                    <span>TYPE</span>
+                    <span>STATUS</span>
+                    <span>ENTRY</span>
+                    <span>P/L</span>
+                    <span>DATE</span>
+
+                </div>
+
+                ${openTrades
+                    .map(tradeRow)
+                    .join("")
+                }
+
+            </div>
+
+        `;
+
+    }else{
+
+        positions.innerHTML = `
+            <div class="empty">
+                No open positions.
+            </div>
+        `;
+
+    }
+
+
+    /* Recent Trades */
+
+    const recent =
+        document
+        .getElementById("recent");
+
+
+    if(trades.length){
+
+        recent.innerHTML = `
+
+            <div class="tablewrap">
+
+                <div class="th">
+
+                    <span>PAIR</span>
+                    <span>TYPE</span>
+                    <span>STATUS</span>
+                    <span>ENTRY</span>
+                    <span>P/L</span>
+                    <span>DATE</span>
+
+                </div>
+
+                ${trades
+                    .slice(0,5)
+                    .map(tradeRow)
+                    .join("")
+                }
+
+            </div>
+
+        `;
+
+    }else{
+
+        recent.innerHTML = `
+            <div class="empty">
+                Your recent trades
+                will appear here.
+            </div>
+        `;
+
+    }
+
+
+    drawCharts();
+
 }
 
-function renderMetrics(){
-  const closed = trades.filter(t => t.exit !== null && t.exit !== undefined && t.exit !== '');
-  const open = trades.filter(t => t.exit === null || t.exit === undefined || t.exit === '');
-  const totalPnl = closed.reduce((s,t) => s + calcPnl(t), 0);
-  const wins = closed.filter(t => calcPnl(t) > 0).length;
-  const winRate = closed.length ? Math.round((wins/closed.length)*100) : 0;
 
-  const el = document.getElementById('metrics');
-  el.innerHTML = `
-    <div class="metric">
-      <div class="label">Total P&amp;L</div>
-      <div class="value ${totalPnl>0?'pos':totalPnl<0?'neg':''}">${totalPnl>=0?'+':''}${fmt(totalPnl)}</div>
-    </div>
-    <div class="metric">
-      <div class="label">Open Positions</div>
-      <div class="value">${open.length}</div>
-    </div>
-    <div class="metric">
-      <div class="label">Win Rate</div>
-      <div class="value">${winRate}%</div>
-    </div>
-    <div class="metric">
-      <div class="label">Total Trades</div>
-      <div class="value">${trades.length}</div>
-    </div>
-  `;
+/* =========================================
+   CHARTS
+========================================= */
+
+let equityChart;
+let performanceChart;
+
+
+function drawCharts(){
+
+    if(equityChart){
+        equityChart.destroy();
+    }
+
+    if(performanceChart){
+        performanceChart.destroy();
+    }
+
+
+    /* EQUITY DATA */
+
+    let equity = 10000;
+
+    const recentTrades =
+        trades
+        .slice(0,12)
+        .reverse();
+
+
+    const labels =
+        recentTrades.map(
+            (_,index) =>
+                index + 1
+        );
+
+
+    const equityValues = [];
+
+
+    recentTrades.forEach(
+        trade => {
+
+            equity += trade.profit;
+
+            equityValues.push(equity);
+
+        }
+    );
+
+
+    equityChart =
+        new Chart(
+            document
+            .getElementById("equityChart"),
+            {
+
+                type:"line",
+
+                data:{
+
+                    labels:
+                        labels.length
+                        ? labels
+                        : ["Start"],
+
+                    datasets:[{
+
+                        data:
+                            equityValues.length
+                            ? equityValues
+                            : [10000],
+
+                        borderWidth:2,
+
+                        tension:.35,
+
+                        pointRadius:2
+
+                    }]
+
+                },
+
+                options:{
+
+                    responsive:true,
+
+                    maintainAspectRatio:false,
+
+                    plugins:{
+
+                        legend:{
+                            display:false
+                        }
+
+                    },
+
+                    scales:{
+
+                        x:{
+                            grid:{
+                                display:false
+                            },
+
+                            ticks:{
+                                color:"#738094"
+                            }
+
+                        },
+
+                        y:{
+
+                            grid:{
+                                color:"#202a36"
+                            },
+
+                            ticks:{
+                                color:"#738094"
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+
+    /* PERFORMANCE */
+
+    const profit =
+        trades
+        .filter(t => t.profit > 0)
+        .reduce(
+            (total,t) =>
+                total + t.profit,
+            0
+        );
+
+
+    const loss =
+        Math.abs(
+            trades
+            .filter(t => t.profit < 0)
+            .reduce(
+                (total,t) =>
+                    total + t.profit,
+                0
+            )
+        );
+
+
+    performanceChart =
+        new Chart(
+            document
+            .getElementById("perfChart"),
+            {
+
+                type:"doughnut",
+
+                data:{
+
+                    labels:[
+                        "Profit",
+                        "Loss"
+                    ],
+
+                    datasets:[{
+
+                        data:[
+                            profit || 1,
+                            loss || 1
+                        ]
+
+                    }]
+
+                },
+
+                options:{
+
+                    responsive:true,
+
+                    maintainAspectRatio:false,
+
+                    plugins:{
+
+                        legend:{
+
+                            position:"bottom",
+
+                            labels:{
+                                color:"#aeb8c6"
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
 }
 
-function renderTicker(){
-  const open = trades.filter(t => t.exit === null || t.exit === undefined || t.exit === '');
-  const tape = document.getElementById('tickerTape');
-  if(!open.length){
-    tape.innerHTML = 'No open positions<span class="cursor"></span>';
-    return;
-  }
-  let html = '';
-  open.forEach(t => {
-    const dirLabel = t.dir === 'buy' ? '▲' : '▼';
-    const cls = t.dir === 'buy' ? 'up' : 'down';
-    html += `<span class="${cls}">${dirLabel} ${t.pair} @ ${fmt(t.entry)}</span>`;
-  });
-  tape.innerHTML = html + html + '<span class="cursor"></span>';
-}
 
-function renderPairs(){
-  const el = document.getElementById('pairSummary');
-  if(!trades.length){
-    el.innerHTML = '<div class="empty-note">No trades yet.</div>';
-    return;
-  }
-  const byPair = {};
-  trades.forEach(t => {
-    if(!byPair[t.pair]) byPair[t.pair] = {count:0, pnl:0};
-    byPair[t.pair].count++;
-    const p = calcPnl(t);
-    if(p !== null) byPair[t.pair].pnl += p;
-  });
-  let html = '';
-  Object.keys(byPair).sort().forEach(pair => {
-    const d = byPair[pair];
-    const cls = d.pnl > 0 ? 'pos' : d.pnl < 0 ? 'neg' : '';
-    html += `<div class="pair-row"><span class="name">${pair} <span style="color:var(--text-dim)">(${d.count})</span></span><span class="pnl ${cls}">${d.pnl>=0?'+':''}${fmt(d.pnl)}</span></div>`;
-  });
-  el.innerHTML = html;
-}
+/* =========================================
+   INITIAL LOAD
+========================================= */
 
-function renderTable(){
-  const body = document.getElementById('tradeBody');
-  if(!trades.length){
-    body.innerHTML = '<tr><td colspan="9" class="empty-note">No trades logged yet. Use the form above to get started.</td></tr>';
-    return;
-  }
-  const sorted = [...trades].sort((a,b) => (b.odate||'').localeCompare(a.odate||''));
-  body.innerHTML = sorted.map(t => {
-    const isOpen = t.exit === null || t.exit === undefined || t.exit === '';
-    const pnl = calcPnl(t);
-    const pnlCls = pnl === null ? '' : pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-    return `<tr>
-      <td>${t.pair}</td>
-      <td class="dir-${t.dir}">${t.dir === 'buy' ? 'Buy' : 'Sell'}</td>
-      <td>${fmt(t.entry)}</td>
-      <td>${isOpen ? '—' : fmt(t.exit)}</td>
-      <td>${t.qty}</td>
-      <td class="status-${isOpen?'open':'closed'}">${isOpen ? 'Open' : 'Closed'}</td>
-      <td class="${pnlCls}">${pnl===null?'—':(pnl>=0?'+':'')+fmt(pnl)}</td>
-      <td>${t.odate || '—'}</td>
-      <td class="tbl-actions">
-        ${isOpen ? `<button onclick="closePosition('${t.id}')">Close</button>` : ''}
-        <button onclick="deleteTrade('${t.id}')">Delete</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
+render();
 
-async function closePosition(id){
-  const price = prompt('Enter exit price:');
-  if(price === null || price === '' || isNaN(price)) return;
-  const t = trades.find(x => x.id === id);
-  if(t){ t.exit = parseFloat(price); await saveTrades(); render(); }
-}
-
-async function deleteTrade(id){
-  if(!confirm('Delete this trade?')) return;
-  trades = trades.filter(t => t.id !== id);
-  await saveTrades();
-  render();
-}
-
-document.getElementById('tradeForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const errEl = document.getElementById('formErr');
-  errEl.style.display = 'none';
-
-  const pair = document.getElementById('f_pair').value.trim().toUpperCase();
-  const dir = document.getElementById('f_dir').value;
-  const entry = parseFloat(document.getElementById('f_entry').value);
-  const qty = parseFloat(document.getElementById('f_qty').value);
-  const exitRaw = document.getElementById('f_exit').value;
-  const exit = exitRaw === '' ? null : parseFloat(exitRaw);
-  const odate = document.getElementById('f_odate').value || new Date().toISOString().slice(0,10);
-  const note = document.getElementById('f_note').value.trim();
-
-  if(!pair || isNaN(entry) || isNaN(qty) || qty <= 0){
-    errEl.textContent = 'Please fill in pair, entry price, and quantity correctly.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  trades.push({ id: uid(), pair, dir, entry, exit, qty, odate, note });
-  await saveTrades();
-  render();
-  e.target.reset();
-});
-
-loadTrades();
 </script>
 
 </body>
